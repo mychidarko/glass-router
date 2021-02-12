@@ -1,8 +1,9 @@
 {
   "name": "glass-router",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Glass router is a wrapper around `react-router-dom` which provides a clean and developer friendly approach to routing in React.",
   "main": "dist/index.js",
+  "module": "dist/glass-router.esm.js",
   "typings": "dist/index.d.ts",
   "scripts": {
     "start": "tsdx watch",
@@ -40,5 +41,8 @@
     "tsdx": "^0.14.1",
     "tslib": "^2.1.0",
     "typescript": "^4.1.5"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
   }
 }

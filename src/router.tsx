@@ -21,7 +21,7 @@ interface IRouterOptions {
     keyLength: Number,
     linkActiveClass: string,
     linkExactActiveClass: string,
-    instance: Router,
+    instance: Router|null,
     scrollBehavior: (savedPosition : {x: number, y: number}) => void,
 };
 
@@ -65,7 +65,7 @@ export default class Router {
 
     protected beforeHooks = [];
 
-    protected _history = null;
+    protected _history: any = null;
 
     constructor(options = {}) {
         this.options(options);
@@ -114,12 +114,12 @@ export default class Router {
                 {/* <ScrollTo /> */}
                 <Switch>
                     {routes.map((route, index) => {
-                        let props = {};
+                        let props: any = {};
 
                         if (route.component) {
-                            props["component"] = route.component;
+                            props.component = route.component;
                         } else if (route.render) {
-                            props["render"] = route.render;
+                            props.render = route.render;
                         }
 
                         return <Route
@@ -147,7 +147,7 @@ export default class Router {
     /**
      * Register a router hook
      */
-    registerHook (list, fn) {
+    registerHook (list: Array<Function|Object>, fn: Function) {
         list.push(fn);
 
         return function () {
@@ -162,14 +162,14 @@ export default class Router {
     /**
      * Define middleware
      */
-    beforeEach(fn) {
+    beforeEach(fn: Function) {
         return this.registerHook(this.beforeHooks, fn);
     }
 
     /**
      * Internal route handler
      */
-    getRoutePath(options) {
+    getRoutePath(options: any) {
         const { routes } = this._options;
         let r = null;
 
@@ -207,7 +207,7 @@ export default class Router {
     /**
      * Navigate to a specific path
      */
-    push(options, state = null) {
+    push(options: any, state = null) {
         const path = this.getRoutePath(options);
 
         return this._history.push(path, state);
@@ -216,7 +216,7 @@ export default class Router {
     /**
      * Replaces the current entry on the history stack
      */
-    replace(options, state = null) {
+    replace(options: any, state = null) {
         const path = this.getRoutePath(options);
 
         return this._history.replace(path, state);
@@ -225,7 +225,7 @@ export default class Router {
     /**
      * Moves the pointer in the history stack by n entries
      */
-    go(n) {
+    go(n: any) {
         return this._history.go(n);
     }
 
@@ -246,7 +246,7 @@ export default class Router {
     /**
      * Go back
      */
-    disable(prompt) {
+    disable(prompt: any) {
         return this._history.block(prompt);
     }
 
