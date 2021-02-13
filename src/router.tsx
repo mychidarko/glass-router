@@ -94,7 +94,7 @@ export default class Router {
   /**
    * Generate JSX from defined routes
    */
-  render() {
+  render(): JSX.Element {
     const {
       mode,
       routes,
