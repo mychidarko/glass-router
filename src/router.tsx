@@ -1,256 +1,269 @@
 import React from "react";
-import { Router as Base, HashRouter, Route, Switch } from "react-router-dom";
+import {
+  Router as Base,
+  HashRouter,
+  Route,
+  Switch,
+  RouteProps,
+} from "react-router-dom";
 import ScrollTo from "./utils/ScrollTo";
 import { createBrowserHistory } from "history";
 
-interface IRoute {
-    component: any,
-    render: any,
-    path: string,
-    name: string,
-    exact: boolean
-};
+export interface IRoute extends RouteProps {
+  path: string;
+  name?: string;
+}
 
-interface IRouterOptions {
-    routes: Array<IRoute>,
-    mode: string,
-    base: string,
-    forceRefresh: false,
-    getUserConfirmation: Window["confirm"],
-    hashType: string,
-    keyLength: Number,
-    linkActiveClass: string,
-    linkExactActiveClass: string,
-    instance: Router|null,
-    scrollBehavior: (savedPosition : {x: number, y: number}) => void,
+export interface IRouterOptions {
+  routes: Array<IRoute>;
+  mode: "history" | "hash";
+  base: string;
+  forceRefresh: false;
+  getUserConfirmation: Window["confirm"];
+  hashType: string;
+  keyLength: Number;
+  linkActiveClass: string;
+  linkExactActiveClass: string;
+  instance: Router | null;
+  scrollBehavior: (savedPosition: { x: number; y: number }) => void;
+}
+export interface Params {
+  [key: string]: string | number;
+}
+export type NamedRoute = {
+  name: string;
+  params?: Params;
 };
-
+export type PathedRoute = {
+  path: string;
+};
+export type To = NamedRoute | PathedRoute;
 /**
  * Easy peasy routing for react. Based on vue router.
  */
 export default class Router {
-    protected _defaultOptions: IRouterOptions = {
-        routes: [],
-        mode: "history",
-        base: "/",
-        forceRefresh: false,
-        getUserConfirmation: window.confirm,
-        hashType: "slash",
-        keyLength: 6,
-        linkActiveClass: "router-link-active",
-        linkExactActiveClass: "router-link-exact-active",
-        instance: null,
-        scrollBehavior: (savedPosition : {x: number, y: number}) => {
-            const {x, y} = savedPosition;
-            ScrollTo(x, y);
-        },
+  protected _defaultOptions: IRouterOptions = {
+    routes: [],
+    mode: "history",
+    base: "/",
+    forceRefresh: false,
+    getUserConfirmation: window.confirm,
+    hashType: "slash",
+    keyLength: 6,
+    linkActiveClass: "router-link-active",
+    linkExactActiveClass: "router-link-exact-active",
+    instance: null,
+    scrollBehavior: (savedPosition: { x: number; y: number }) => {
+      const { x, y } = savedPosition;
+      ScrollTo(x, y);
+    },
+  };
+
+  protected _options: IRouterOptions = {
+    routes: [],
+    mode: "history",
+    base: "/",
+    forceRefresh: false,
+    getUserConfirmation: window.confirm,
+    hashType: "slash",
+    keyLength: 6,
+    linkActiveClass: "router-link-active",
+    linkExactActiveClass: "router-link-exact-active",
+    instance: null,
+    scrollBehavior: (savedPosition: { x: number; y: number }) => {
+      const { x, y } = savedPosition;
+      ScrollTo(x, y);
+    },
+  };
+
+  protected beforeHooks = [];
+
+  protected _history: any = null;
+
+  constructor(options: Partial<IRouterOptions> = {}) {
+    this.options(options);
+  }
+
+  options(options: Partial<IRouterOptions>) {
+    this._options = {
+      ...this._defaultOptions,
+      ...options,
     };
-    
-    protected _options: IRouterOptions = {
-        routes: [],
-        mode: "history",
-        base: "/",
-        forceRefresh: false,
-        getUserConfirmation: window.confirm,
-        hashType: "slash",
-        keyLength: 6,
-        linkActiveClass: "router-link-active",
-        linkExactActiveClass: "router-link-exact-active",
-        instance: null,
-        scrollBehavior: (savedPosition : {x: number, y: number}) => {
-            const {x, y} = savedPosition;
-            ScrollTo(x, y);
-        },
+  }
+
+  /**
+   * Generate JSX from defined routes
+   */
+  render(): JSX.Element {
+    const {
+      mode,
+      routes,
+      base,
+      forceRefresh,
+      getUserConfirmation,
+      keyLength,
+      hashType,
+    } = this._options;
+
+    let routerProps = {};
+
+    if (mode === "history") {
+      routerProps = {
+        basename: base,
+        forceRefresh,
+        getUserConfirmation,
+        keyLength,
+      };
+
+      this._history = createBrowserHistory(routerProps);
+    } else {
+      routerProps = {
+        basename: base,
+        hashType,
+        getUserConfirmation,
+      };
+    }
+
+    const children = (
+      <>
+        {/* <ScrollTo /> */}
+        <Switch>
+          {routes.map((route, index) => {
+            const props: Exclude<IRoute, "name"> = route;
+            return <Route {...props} key={index} />;
+          })}
+        </Switch>
+      </>
+    );
+
+    return mode === "hash" ? (
+      <HashRouter {...routerProps}>{children}</HashRouter>
+    ) : (
+      <Base history={this._history} {...routerProps}>
+        {children}
+      </Base>
+    );
+  }
+
+  /**
+   * Register a router hook
+   */
+  registerHook(list: Array<Function | Object>, fn: Function) {
+    list.push(fn);
+
+    return function() {
+      const i = list.indexOf(fn);
+
+      if (i > -1) {
+        list.splice(i, 1);
+      }
     };
+  }
 
-    protected beforeHooks = [];
+  /**
+   * Define middleware
+   */
+  beforeEach(fn: Function) {
+    return this.registerHook(this.beforeHooks, fn);
+  }
 
-    protected _history: any = null;
+  /**
+   * Internal route handler
+   */
+  getRoutePath(route: To | string): string {
+    let rp: string = "";
+    if (typeof route === "string") {
+      rp = route[0] === "/" ? route : this.findNamedPath(route);
+    } else {
+      const name = (route as NamedRoute).name;
+      const params = (route as NamedRoute).params;
+      const path = (route as PathedRoute).path;
+      if (path) rp = path;
+      if (name) rp = this.findNamedPath(name);
+      if (params) rp = this.findNamedPath(name, params);
+    }
+    return rp;
+  }
 
-    constructor(options = {}) {
-        this.options(options);
+  protected findNamedPath(path: string, params?: Params): string {
+    let route = this._options.routes.find(route => {
+      return route.name === path;
+    })?.path;
+
+    if (route === undefined) throw new Error(`Route ${path} does not exist`);
+    if (params !== undefined) {
+      let routePath: string = `${route}`;
+
+      for (let key in params) {
+        routePath += `/${params[key]}`;
+      }
+      route = routePath;
     }
 
-    options(options: Array<Object>|Object) {
-        if (Array.isArray(options)) {
-            options = { routes: options };
-        }
+    return route;
+  }
 
-        this._options = {
-            ...this._defaultOptions,
-            ...options,
-        };
-    }
+  /**
+   * Get the number of entries in the history stack
+   */
+  entries() {
+    return this._history.length;
+  }
 
-    /**
-     * Generate JSX from defined routes
-     */
-    render() {
-        const {
-            mode, routes, base, forceRefresh, getUserConfirmation, keyLength, hashType
-        } = this._options;
+  /**
+   * Get the The current action (PUSH, REPLACE, or POP)
+   */
+  action() {
+    return this._history.action;
+  }
 
-        let routerProps = {};
+  /**
+   * Navigate to a specific path
+   */
+  push(to: To | string, state: any = null) {
+    const path = this.getRoutePath(to);
 
-        if (this._options.mode === "history") {
-            routerProps = {
-                basename: base,
-                forceRefresh,
-                getUserConfirmation,
-                keyLength,
-            };
+    return this._history.push(path, state);
+  }
 
-            this._history = createBrowserHistory(routerProps);
-        } else {
-            routerProps = {
-                basename: base,
-                hashType,
-                getUserConfirmation,
-            };
-        }
+  /**
+   * Replaces the current entry on the history stack
+   */
+  replace(options: any, state: any = null) {
+    const path = this.getRoutePath(options);
 
-        const children = (
-            <>
-                {/* <ScrollTo /> */}
-                <Switch>
-                    {routes.map((route, index) => {
-                        let props: any = {};
+    return this._history.replace(path, state);
+  }
 
-                        if (route.component) {
-                            props.component = route.component;
-                        } else if (route.render) {
-                            props.render = route.render;
-                        }
+  /**
+   * Moves the pointer in the history stack by n entries
+   */
+  go(n: number) {
+    return this._history.go(n);
+  }
 
-                        return <Route
-                            exact={route.exact || false}
-                            path={route.path}
-                            key={index}
-                            {...props}
-                        />
-                    })}
-                </Switch>
-            </>
-        );
+  /**
+   * Go back
+   */
+  back() {
+    return this._history.go(-1);
+  }
 
-        return mode === "hash" ? (
-            <HashRouter {...routerProps}>
-                {children}
-            </HashRouter>
-        ) : (
-            <Base history={this._history} {...routerProps}>
-                {children}
-            </Base>
-        );
-    }
+  /**
+   * Go forward
+   */
+  forward() {
+    return this._history.go(1);
+  }
 
-    /**
-     * Register a router hook
-     */
-    registerHook (list: Array<Function|Object>, fn: Function) {
-        list.push(fn);
+  /**
+   * Go back
+   */
+  disable(prompt: any) {
+    return this._history.block(prompt);
+  }
 
-        return function () {
-            const i = list.indexOf(fn);
-
-            if (i > -1) {
-                list.splice(i, 1);
-            }
-        }
-    }
-
-    /**
-     * Define middleware
-     */
-    beforeEach(fn: Function) {
-        return this.registerHook(this.beforeHooks, fn);
-    }
-
-    /**
-     * Internal route handler
-     */
-    getRoutePath(options: any) {
-        const { routes } = this._options;
-        let r = null;
-
-        if (typeof options === "object") {
-            routes.forEach((route) => {
-                if (route.name === options.name) {
-                    r = route.path;
-                }
-            });
-            
-            if (r === null) {
-                return Error(`No route named ${options.name} was found!`);
-            }
-        }
-
-        if (r === null) r = options;
-
-        return r;
-    }
-
-    /**
-     * Get the number of entries in the history stack
-     */
-    entries() {
-        return this._history.length;
-    }
-
-    /**
-     * Get the The current action (PUSH, REPLACE, or POP)
-     */
-    action() {
-        return this._history.action;
-    }
-
-    /**
-     * Navigate to a specific path
-     */
-    push(options: any, state = null) {
-        const path = this.getRoutePath(options);
-
-        return this._history.push(path, state);
-    }
-
-    /**
-     * Replaces the current entry on the history stack
-     */
-    replace(options: any, state = null) {
-        const path = this.getRoutePath(options);
-
-        return this._history.replace(path, state);
-    }
-
-    /**
-     * Moves the pointer in the history stack by n entries
-     */
-    go(n: any) {
-        return this._history.go(n);
-    }
-
-    /**
-     * Go back
-     */
-    back() {
-        return this._history.go(-1);
-    }
-
-    /**
-     * Go forward
-     */
-    forward() {
-        return this._history.go(1);
-    }
-
-    /**
-     * Go back
-     */
-    disable(prompt: any) {
-        return this._history.block(prompt);
-    }
-
-    history() {
-        return this._history;
-    }
+  history() {
+    return this._history;
+  }
 }

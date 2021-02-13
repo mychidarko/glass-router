@@ -1,17 +1,24 @@
-import React from "react";
-import GlassRouter from "./index";
+import React, { FC } from "react";
+import GlassRouter, { To } from "./index";
 
-export const RouterLink = (props: any) => {
-	const path = GlassRouter.getRoutePath(props.to);
+interface LinkProps
+  extends React.DetailedHTMLProps<
+    React.AnchorHTMLAttributes<HTMLAnchorElement>,
+    HTMLAnchorElement
+  > {
+  to: To | string;
+}
+export const Link: FC<LinkProps> = props => {
+  const path = GlassRouter.getRoutePath(props.to);
 
-	const handleClick = (event: any) => {
-		event.preventDefault();
-		return GlassRouter.push(path);
-	}
+  const handleClick = (event: any) => {
+    event.preventDefault();
+    return GlassRouter.push(path);
+  };
 
-	return (
-		<a href={path} onClick={handleClick} {...props}>
-			{props.children}
-		</a>
-	);
+  return (
+    <a onClick={handleClick} {...props}>
+      {props.children}
+    </a>
+  );
 };
