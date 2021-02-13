@@ -221,7 +221,7 @@ export default class Router {
   /**
    * Navigate to a specific path
    */
-  push(to: To | string, state = null) {
+  push(to: To | string, state: any = null) {
     const path = this.getRoutePath(to);
 
     return this._history.push(path, state);
@@ -230,7 +230,7 @@ export default class Router {
   /**
    * Replaces the current entry on the history stack
    */
-  replace(options: any, state = null) {
+  replace(options: any, state: any = null) {
     const path = this.getRoutePath(options);
 
     return this._history.replace(path, state);
