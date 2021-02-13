@@ -9,12 +9,12 @@ import {
 import ScrollTo from "./utils/ScrollTo";
 import { createBrowserHistory } from "history";
 
-interface IRoute extends RouteProps {
+export interface IRoute extends RouteProps {
   path: string;
   name?: string;
 }
 
-interface IRouterOptions {
+export interface IRouterOptions {
   routes: Array<IRoute>;
   mode: "history" | "hash";
   base: string;
@@ -27,14 +27,14 @@ interface IRouterOptions {
   instance: Router | null;
   scrollBehavior: (savedPosition: { x: number; y: number }) => void;
 }
-interface Params {
+export interface Params {
   [key: string]: string | number;
 }
-type NamedRoute = {
+export type NamedRoute = {
   name: string;
   params?: Params;
 };
-type PathedRoute = {
+export type PathedRoute = {
   path: string;
 };
 export type To = NamedRoute | PathedRoute;
@@ -129,7 +129,6 @@ export default class Router {
         {/* <ScrollTo /> */}
         <Switch>
           {routes.map((route, index) => {
-            delete route.name;
             const props: Exclude<IRoute, "name"> = route;
             return <Route {...props} key={index} />;
           })}
@@ -171,8 +170,8 @@ export default class Router {
   /**
    * Internal route handler
    */
-  getRoutePath(route: To | string): any {
-    let rp: any = null;
+  getRoutePath(route: To | string): string {
+    let rp: string = "";
     if (typeof route === "string") {
       rp = route[0] === "/" ? route : this.findNamedPath(route);
     } else {
