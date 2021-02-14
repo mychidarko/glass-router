@@ -7,21 +7,15 @@ export const Link: FC<ILinkProps> = ({
   children,
   ...rest
 }) => {
-  const path = GlassRouter.getRoutePath(to);
   const history = GlassRouter.history();
 
   const href = location ? history.createHref(location) : "";
 
-  const props = {
-    ...rest,
-    href
-  };
-
   const isModifiedEvent = (event: any) => {
     return !!(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey);
-  }
+  };
 
-  const handleClick = (event: any) => {
+  const onClick = (event: any) => {
     try {
       if (props.onClick) props.onClick(event);
     } catch (ex) {
@@ -36,12 +30,18 @@ export const Link: FC<ILinkProps> = ({
       !isModifiedEvent(event) // ignore clicks with modifier keys
     ) {
       event.preventDefault();
-      return GlassRouter.push(path);
+      return GlassRouter.push(to);
     }
   };
 
+  const props = {
+    ...rest,
+    href,
+    onClick
+  };
+
   return (
-    <a onClick={handleClick} {...props}>
+    <a {...props}>
       {children}
     </a>
   );

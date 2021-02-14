@@ -205,6 +205,19 @@ export default class Router {
   push(to: To | string, state: any = null) {
     const path = this.getRoutePath(to);
 
+    if (state === null && typeof to === "object") {
+      const namedRouteState = (to as NamedRoute).state;
+      const pathedRouteState = (to as PathedRoute).state;
+
+      if (namedRouteState) {
+        state = namedRouteState;
+      }
+
+      if (pathedRouteState) {
+        state = pathedRouteState;
+      }
+    }
+
     return this._history.push(path, state);
   }
 
