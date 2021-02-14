@@ -4,42 +4,19 @@ import {
   HashRouter,
   Route,
   Switch,
-  RouteProps,
 } from "react-router-dom";
-import ScrollTo from "./utils/ScrollTo";
 import { createBrowserHistory } from "history";
 
-export interface IRoute extends RouteProps {
-  path: string;
-  name?: string;
-}
+import ScrollTo from "./utils/ScrollTo";
+import { To, PathedRoute, NamedRoute } from "./types/route";
+import { IRoute, IParams } from "./interfaces/route";
+import { IRouterOptions } from "./interfaces/router";
 
-export interface IRouterOptions {
-  routes: Array<IRoute>;
-  mode: "history" | "hash";
-  base: string;
-  forceRefresh: false;
-  getUserConfirmation: Window["confirm"];
-  hashType: string;
-  keyLength: Number;
-  linkActiveClass: string;
-  linkExactActiveClass: string;
-  instance: Router | null;
-  scrollBehavior: (savedPosition: { x: number; y: number }) => void;
-}
-export interface Params {
-  [key: string]: string | number;
-}
-export type NamedRoute = {
-  name: string;
-  params?: Params;
-};
-export type PathedRoute = {
-  path: string;
-};
-export type To = NamedRoute | PathedRoute;
 /**
- * Easy peasy routing for react. Based on vue router.
+ * Glass Router
+ * --------
+ * Easy peasy routing for react.
+ * Inspired by vue router.
  */
 export default class Router {
   protected _defaultOptions: IRouterOptions = {
@@ -52,7 +29,6 @@ export default class Router {
     keyLength: 6,
     linkActiveClass: "router-link-active",
     linkExactActiveClass: "router-link-exact-active",
-    instance: null,
     scrollBehavior: (savedPosition: { x: number; y: number }) => {
       const { x, y } = savedPosition;
       ScrollTo(x, y);
@@ -69,7 +45,6 @@ export default class Router {
     keyLength: 6,
     linkActiveClass: "router-link-active",
     linkExactActiveClass: "router-link-exact-active",
-    instance: null,
     scrollBehavior: (savedPosition: { x: number; y: number }) => {
       const { x, y } = savedPosition;
       ScrollTo(x, y);
@@ -172,12 +147,14 @@ export default class Router {
    */
   getRoutePath(route: To | string): string {
     let rp: string = "";
+
     if (typeof route === "string") {
       rp = route[0] === "/" ? route : this.findNamedPath(route);
     } else {
       const name = (route as NamedRoute).name;
       const params = (route as NamedRoute).params;
       const path = (route as PathedRoute).path;
+
       if (path) rp = path;
       if (name) rp = this.findNamedPath(name);
       if (params) rp = this.findNamedPath(name, params);
@@ -185,18 +162,22 @@ export default class Router {
     return rp;
   }
 
-  protected findNamedPath(path: string, params?: Params): string {
-    let route = this._options.routes.find(route => {
+  protected findNamedPath(path: string, params?: IParams): string {
+    let route = this._options.routes.find((route) => {
       return route.name === path;
     })?.path;
 
-    if (route === undefined) throw new Error(`Route ${path} does not exist`);
+    if (route === undefined) {
+      throw new Error(`Route ${path} does not exist`);
+    }
+
     if (params !== undefined) {
       let routePath: string = `${route}`;
 
       for (let key in params) {
         routePath += `/${params[key]}`;
       }
+
       route = routePath;
     }
 
