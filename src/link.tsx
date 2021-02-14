@@ -17,7 +17,7 @@ export const Link: FC<ILinkProps> = ({
 
   const onClick = (event: any) => {
     try {
-      if (props.onClick) props.onClick(event);
+      if (rest.onClick) rest.onClick(event);
     } catch (ex) {
       event.preventDefault();
       throw ex;
@@ -26,7 +26,7 @@ export const Link: FC<ILinkProps> = ({
     if (
       !event.defaultPrevented && // onClick prevented default
       event.button === 0 && // ignore everything but left clicks
-      (!props.target || props.target === "_self") && // let browser handle "target=_blank" etc.
+      (!rest.target || rest.target === "_self") && // let browser handle "target=_blank" etc.
       !isModifiedEvent(event) // ignore clicks with modifier keys
     ) {
       event.preventDefault();
