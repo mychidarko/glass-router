@@ -1,11 +1,10 @@
 import React from "react";
 import {
   Router as Base,
-  HashRouter,
   Route,
   Switch,
 } from "react-router-dom";
-import { createBrowserHistory } from "history";
+import { createBrowserHistory, createHashHistory } from "history";
 
 import ScrollTo from "./utils/ScrollTo";
 import { To, PathedRoute, NamedRoute } from "./types/route";
@@ -97,6 +96,8 @@ export default class Router {
         hashType,
         getUserConfirmation,
       };
+
+      this._history = createHashHistory(routerProps);
     }
 
     const children = (
@@ -111,9 +112,7 @@ export default class Router {
       </>
     );
 
-    return mode === "hash" ? (
-      <HashRouter {...routerProps}>{children}</HashRouter>
-    ) : (
+    return (
       <Base history={this._history} {...routerProps}>
         {children}
       </Base>
@@ -199,12 +198,7 @@ export default class Router {
     return this._history.action;
   }
 
-  /**
-   * Navigate to a specific path
-   */
-  push(to: To | string, state: any = null) {
-    const path = this.getRoutePath(to);
-
+  protected sortState(to: To | string, state: any = null) {
     if (state === null && typeof to === "object") {
       const namedRouteState = (to as NamedRoute).state;
       const pathedRouteState = (to as PathedRoute).state;
@@ -218,6 +212,21 @@ export default class Router {
       }
     }
 
+    return state;
+  }
+
+  /**
+   * Navigate to a specific path
+   */
+  push(to: To | string, state: any = null) {
+    const path = this.getRoutePath(to);
+
+    if (this._options.mode === "hash") {
+      return this._history.push(path);
+    }
+
+    state = this.sortState(to, state);
+
     return this._history.push(path, state);
   }
 
@@ -226,6 +235,12 @@ export default class Router {
    */
   replace(options: any, state: any = null) {
     const path = this.getRoutePath(options);
+
+    if (this._options.mode === "hash") {
+      return this._history.replace(path);
+    }
+
+    state = this.sortState(options, state);
 
     return this._history.replace(path, state);
   }
