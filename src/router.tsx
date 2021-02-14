@@ -159,6 +159,7 @@ export default class Router {
       if (name) rp = this.findNamedPath(name);
       if (params) rp = this.findNamedPath(name, params);
     }
+
     return rp;
   }
 
