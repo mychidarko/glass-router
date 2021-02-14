@@ -1,14 +1,8 @@
 import React, { FC } from "react";
-import GlassRouter, { To } from "./index";
+import GlassRouter from "./index";
+import { ILinkProps } from "./interfaces/link";
 
-interface LinkProps
-  extends React.DetailedHTMLProps<
-    React.AnchorHTMLAttributes<HTMLAnchorElement>,
-    HTMLAnchorElement
-  > {
-  to: To | string;
-}
-export const Link: FC<LinkProps> = props => {
+export const Link: FC<ILinkProps> = props => {
   const path = GlassRouter.getRoutePath(props.to);
 
   const handleClick = (event: any) => {
