@@ -50,7 +50,7 @@ export default class Router {
     },
   };
 
-  protected beforeHooks = [];
+  protected beforeHooks: Array<Function> = [];
 
   protected _history: any = null;
 
@@ -216,9 +216,20 @@ export default class Router {
   }
 
   /**
+   * Internal middleware handler
+   */
+  loadMiddleWare() {
+    const before = this.beforeHooks;
+
+    before.forEach(m => m());
+  }
+
+  /**
    * Navigate to a specific path
    */
   push(to: To | string, state: any = null) {
+    this.loadMiddleWare();
+
     const path = this.getRoutePath(to);
 
     if (this._options.mode === "hash") {
@@ -234,6 +245,8 @@ export default class Router {
    * Replaces the current entry on the history stack
    */
   replace(options: any, state: any = null) {
+    this.loadMiddleWare();
+
     const path = this.getRoutePath(options);
 
     if (this._options.mode === "hash") {
