@@ -28,6 +28,7 @@ export default class Router {
     keyLength: 6,
     linkActiveClass: "router-link-active",
     linkExactActiveClass: "router-link-exact-active",
+    middleware: false,
     scrollBehavior: (savedPosition: { x: number; y: number }) => {
       const { x, y } = savedPosition;
       ScrollTo(x, y);
@@ -44,6 +45,7 @@ export default class Router {
     keyLength: 6,
     linkActiveClass: "router-link-active",
     linkExactActiveClass: "router-link-exact-active",
+    middleware: false,
     scrollBehavior: (savedPosition: { x: number; y: number }) => {
       const { x, y } = savedPosition;
       ScrollTo(x, y);
@@ -63,6 +65,32 @@ export default class Router {
       ...this._defaultOptions,
       ...options,
     };
+
+    if (options.middleware) {
+      this.initializeMiddleWare();
+    }
+  }
+
+
+  /**
+   * Initialize middleware handler
+   */
+  protected initializeMiddleWare() {
+    this.beforeEach((to: IRoute, from: IRoute, next: Function) => {
+      const { middleware } = to?.meta || { middleware: null };
+
+      if (!middleware) return next();
+
+      const context = {
+        to,
+        from,
+        next,
+      };
+
+      return middleware[0]({
+        ...context,
+      });
+    });
   }
 
   /**
@@ -218,17 +246,47 @@ export default class Router {
   /**
    * Internal middleware handler
    */
-  loadMiddleWare() {
+  loadMiddleWare(to: To | string, state: any = null) {
     const before = this.beforeHooks;
 
-    before.forEach(m => m());
+    to = this.getRoutePath(to);
+
+    let fromRoute = window.location.hash.substring(1);
+
+    if (this._options.mode === "history") {
+      fromRoute === window.location.pathname;
+    }
+
+    var from = this._options.routes.find(function(route) {
+      return route.path === fromRoute;
+    });
+
+    const toRoute = this._options.routes.find(function(route) {
+      return route.path === to;
+    });
+
+    const self = this;
+
+    return before.forEach((m) =>
+      m(to, from, function(route = toRoute) {
+        if (self._options.mode === "hash") {
+          return self._history.push(route?.path);
+        }
+
+        return self._history.push(route?.path, state);
+      })
+    );
   }
 
   /**
    * Navigate to a specific path
    */
   push(to: To | string, state: any = null) {
-    this.loadMiddleWare();
+    this.loadMiddleWare(to, state);
+
+    if (this._options.middleware) {
+      return this.loadMiddleWare(to, state);
+    }
 
     const path = this.getRoutePath(to);
 
@@ -245,7 +303,11 @@ export default class Router {
    * Replaces the current entry on the history stack
    */
   replace(options: any, state: any = null) {
-    this.loadMiddleWare();
+    this.loadMiddleWare(options, state);
+
+    if (this._options.middleware) {
+      return this.loadMiddleWare(options);
+    }
 
     const path = this.getRoutePath(options);
 

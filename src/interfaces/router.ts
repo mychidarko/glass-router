@@ -10,5 +10,6 @@ export interface IRouterOptions {
   keyLength: Number;
   linkActiveClass: string;
   linkExactActiveClass: string;
+  middleware: boolean;
   scrollBehavior: (savedPosition: { x: number; y: number }) => void;
 }

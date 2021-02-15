@@ -119,6 +119,102 @@ export default App;
     <Link to={{ name: "dashboard" }}>Dashboard</Link>
     ```
 
+## Route Meta
+
+Sometimes, you might want to attach arbitrary information to routes like classnames, who can access the route, etc. This can be achieved through the `meta` property which accepts an object of properties and can be accessed on the route location and navigation guards. You can define `meta` properties like this:
+
+```js
+GlassRouter.options({
+  routes: [
+    {
+      path: 'bar',
+      component: Bar,
+      // a meta field
+      meta: { requiresAuth: true }
+    },
+  ],
+});
+```
+
+So how do we access this `meta` field?
+
+An example use case is checking for a meta field in the global navigation guard:
+
+```js
+GlassRouter.beforeEach((to, from, next) => {
+  if (to.meta.requiresAuth) {
+    // this route requires auth, check if logged in
+    // if not, redirect to login page.
+    if (!auth.loggedIn()) {
+      next({ path: "/login" });
+
+      // or
+
+      next("/login");
+
+      // or
+
+      next({ name: "login" });
+    } else {
+      next();
+    }
+  } else {
+    next(); // make sure to always call next()!
+  }
+});
+```
+
+### Middleware
+
+Using this concept, glassRX includes a middleware feature out of the box which allows you to write middleware which should be run before routing to the intended page.
+
+To get started, you simply need to pass the `true` to the `middleware` option.
+
+```js
+// ...
+
+GlassRouter.options({
+  routes,
+  middleware: true,
+});
+```
+
+Setting the `middleware` option doesn't force you to include middleware on all routes, as all routes without middleware are navigated to immediately.
+
+After turning on the `middleware` feature, you simply need to include your desired middleware in your route meta like so:
+
+```js
+import auth from "./config/middleware/auth";
+
+const routes = [
+  {
+    path: "/checkout",
+    component: () => import('./Checkout'),
+    name: "checkout",
+    meta: {
+      // middleware here
+      middleware: [auth],
+    },
+  },
+];
+```
+
+Here's an example of middleware that redirects to login if the user isn't logged in:
+
+```js
+import { hasAuth } from "../../helpers/user";
+
+export default function auth({ next }) {
+  if (hasAuth()) {
+    return next();
+  }
+
+  return next({ name: "home" });
+}
+```
+
+Your middleware is passed an object containing the `from`, `to` and `next` variables. `from` holds data about the route you're coming from, `to` is about the page you're routing to and `next` handles your routing. Leaving `next` empty is essentially the same as `next(to)`.
+
 ## Note
 
 You might have noticed that everything above is very similar to vue router, glassRX includes `react-router` specific options like `exact` and `render`.

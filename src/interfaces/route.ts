@@ -3,7 +3,7 @@ import { RouteProps } from "react-router-dom";
 export interface IRouteBase extends RouteProps {
   path: string;
   name?: string;
-  meta?: object;
+  meta?: any;
   props?: object;
 }
 
