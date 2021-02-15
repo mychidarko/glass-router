@@ -209,7 +209,7 @@ export default function auth({ next }) {
     return next();
   }
 
-  return next({ name: "home" });
+  return next({ name: "login" });
 }
 ```
 
