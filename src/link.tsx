@@ -7,9 +7,7 @@ export const Link: FC<ILinkProps> = ({
   children,
   ...rest
 }) => {
-  const history = GlassRouter.history();
-
-  const href = location ? history.createHref(location) : "";
+  const href = GlassRouter.getRoutePath(to);
 
   const isModifiedEvent = (event: any) => {
     return !!(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey);
