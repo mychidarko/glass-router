@@ -8,7 +8,7 @@ import { createBrowserHistory, createHashHistory } from "history";
 
 import ScrollTo from "./utils/ScrollTo";
 import { To, PathedRoute, NamedRoute } from "./types/route";
-import { IRoute, IParams } from "./interfaces/route";
+import { IRoute, IParams, IWrapperProps } from "./interfaces/route";
 import { IRouterOptions, IRouterProps } from "./interfaces/router";
 
 /**
@@ -97,6 +97,7 @@ export default class Router {
    * Generate JSX from defined routes
    */
   render(): JSX.Element {
+    const self = this;
     const {
       mode,
       routes,
@@ -133,17 +134,36 @@ export default class Router {
         {/* <ScrollTo /> */}
         <Switch>
           {routes.map((route, index) => {
-            const props: Exclude<IRoute, "name"> = route;
+            const props: any = route;
 
-            const wrapper: any = () => {
-              if (this._options.middleware) {
-                return this.loadMiddleWare(route);
+            class Wrapper extends React.Component<IWrapperProps> {
+              componentDidMount() {
+                if (this.props.useMiddleware) {
+                  return this.props.loadMiddleWare(route, null, self);
+                }
               }
 
-              return <Route {...props} key={index} />;
+              render() {
+                return <props.component routeInfo={props} key={`class-${index}`} />;
+              }
             };
 
-            return <Route path={props.path} render={wrapper} />;
+            let containerProps = {...props};
+            delete containerProps.component;
+            delete containerProps.render;
+
+            const classProps = {
+              useMiddleware: this._options.middleware,
+              loadMiddleWare: this.loadMiddleWare,
+            }
+
+            return (
+              <Route
+                {...containerProps}
+                key={index}
+                render={() => <Wrapper {...classProps} />}
+              />
+            );
           })}
         </Switch>
       </>
@@ -255,36 +275,42 @@ export default class Router {
   /**
    * Internal middleware handler
    */
-  loadMiddleWare(to: To | string, state: any = null) {
-    const before = this.beforeHooks;
+  loadMiddleWare(to: To | string, state: any = null, self: this | null = null) {
+    if (!self) self = this;
 
-    to = this.getRoutePath(to);
+    const before = self.beforeHooks;
 
-    let fromRoute = window.location.hash.substring(1);
+    to = self.getRoutePath(to);
 
-    if (this._options.mode === "history") {
-      fromRoute === window.location.pathname;
+    let fromRoute = window.location.pathname;
+
+    if (self._options.mode === "history") {
+      fromRoute = window.location.pathname;
+    } else {
+      fromRoute = window.location.hash.substring(1);
     }
 
-    var from = this._options.routes.find(function(route) {
+    var from = self._options.routes.find(function(route) {
       return route.path === fromRoute;
     });
 
-    const toRoute = this._options.routes.find(function(route) {
+    const toRoute = self._options.routes.find(function(route) {
       return route.path === to;
     });
 
-    const self = this;
+    const next = (route: IRoute | null = null) => {
+      if (route === null) return;
 
-    return before.forEach((m) =>
-      m(to, from, function(route = toRoute) {
-        if (self._options.mode === "hash") {
-          return self._history.push(route?.path);
-        }
+      const trueRoute = self?.getRoutePath(route);
 
-        return self._history.push(route?.path, state);
-      })
-    );
+      if (self?._options.mode === "hash") {
+        return self?._history.push(trueRoute);
+      }
+
+      return self?._history.push(trueRoute, state);
+    };
+
+    return before.forEach((m) => m(toRoute, from, next));
   }
 
   /**

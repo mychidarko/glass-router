@@ -14,3 +14,8 @@ export interface IRoute extends IRouteBase {
 export interface IParams {
   [key: string]: string | number;
 }
+
+export interface IWrapperProps {
+  useMiddleware: any;
+  loadMiddleWare: any;
+}
