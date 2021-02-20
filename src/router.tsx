@@ -9,7 +9,7 @@ import { createBrowserHistory, createHashHistory } from "history";
 import ScrollTo from "./utils/ScrollTo";
 import { To, PathedRoute, NamedRoute } from "./types/route";
 import { IRoute, IParams } from "./interfaces/route";
-import { IRouterOptions } from "./interfaces/router";
+import { IRouterOptions, IRouterProps } from "./interfaces/router";
 
 /**
  * Glass Router
@@ -107,7 +107,7 @@ export default class Router {
       hashType,
     } = this._options;
 
-    let routerProps = {};
+    let routerProps: IRouterProps = {};
 
     if (mode === "history") {
       routerProps = {
@@ -134,7 +134,16 @@ export default class Router {
         <Switch>
           {routes.map((route, index) => {
             const props: Exclude<IRoute, "name"> = route;
-            return <Route {...props} key={index} />;
+
+            const wrapper: any = () => {
+              if (this._options.middleware) {
+                return this.loadMiddleWare(route);
+              }
+
+              return <Route {...props} key={index} />;
+            };
+
+            return <Route path={props.path} render={wrapper} />;
           })}
         </Switch>
       </>
@@ -282,12 +291,6 @@ export default class Router {
    * Navigate to a specific path
    */
   push(to: To | string, state: any = null) {
-    this.loadMiddleWare(to, state);
-
-    if (this._options.middleware) {
-      return this.loadMiddleWare(to, state);
-    }
-
     const path = this.getRoutePath(to);
 
     if (this._options.mode === "hash") {
@@ -303,12 +306,6 @@ export default class Router {
    * Replaces the current entry on the history stack
    */
   replace(options: any, state: any = null) {
-    this.loadMiddleWare(options, state);
-
-    if (this._options.middleware) {
-      return this.loadMiddleWare(options);
-    }
-
     const path = this.getRoutePath(options);
 
     if (this._options.mode === "hash") {

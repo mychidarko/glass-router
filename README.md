@@ -243,4 +243,11 @@ Route with `render` instead of `component`.
 },
 ```
 
-**More features like middleware are still being developed. Check this page for updates.**
+**More features are still being developed. Check this page for updates.**
+
+## Contributors
+
+Glass RX was developed by the collective efforts of:
+
+- Michael Darko [@darko-mychi](https://github.ccom/darko-mychi)
+- Cosmos Appiah [@console45](https://github.ccom/console45)
