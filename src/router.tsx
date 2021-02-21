@@ -60,20 +60,7 @@ export default class Router {
   };
 
   protected _options: IRouterOptions = {
-    routes: [],
-    mode: "history",
-    base: "/",
-    forceRefresh: false,
-    getUserConfirmation: window.confirm,
-    hashType: "slash",
-    keyLength: 6,
-    linkActiveClass: "router-link-active",
-    linkExactActiveClass: "router-link-exact-active",
-    instance: null,
-    scrollBehavior: (savedPosition: { x: number; y: number }) => {
-      const { x, y } = savedPosition;
-      ScrollTo(x, y);
-    },
+    ...this._defaultOptions,
   };
 
   protected beforeHooks = [];
