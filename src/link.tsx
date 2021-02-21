@@ -1,24 +1,46 @@
 import React, { FC } from "react";
-import GlassRouter, { To } from "./index";
+import GlassRouter from "./index";
+import { ILinkProps } from "./interfaces/link";
 
-interface LinkProps
-  extends React.DetailedHTMLProps<
-    React.AnchorHTMLAttributes<HTMLAnchorElement>,
-    HTMLAnchorElement
-  > {
-  to: To | string;
-}
-export const Link: FC<LinkProps> = props => {
-  const path = GlassRouter.getRoutePath(props.to);
+export const Link: FC<ILinkProps> = ({
+  to,
+  children,
+  ...rest
+}) => {
+  const href = GlassRouter.getRoutePath(to);
 
-  const handleClick = (event: any) => {
-    event.preventDefault();
-    return GlassRouter.push(path);
+  const isModifiedEvent = (event: any) => {
+    return !!(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey);
+  };
+
+  const onClick = (event: any) => {
+    try {
+      if (rest.onClick) rest.onClick(event);
+    } catch (ex) {
+      event.preventDefault();
+      throw ex;
+    }
+
+    if (
+      !event.defaultPrevented && // onClick prevented default
+      event.button === 0 && // ignore everything but left clicks
+      (!rest.target || rest.target === "_self") && // let browser handle "target=_blank" etc.
+      !isModifiedEvent(event) // ignore clicks with modifier keys
+    ) {
+      event.preventDefault();
+      return GlassRouter.push(to);
+    }
+  };
+
+  const props = {
+    ...rest,
+    href,
+    onClick
   };
 
   return (
-    <a onClick={handleClick} {...props}>
-      {props.children}
+    <a {...props}>
+      {children}
     </a>
   );
 };
