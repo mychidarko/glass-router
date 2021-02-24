@@ -144,7 +144,21 @@ export default class Router {
               }
 
               render() {
-                return <props.component routeInfo={props} key={`class-${index}`} />;
+                const $route = {
+                  state: (this.props.location && this.props.location.state) || null,
+                  location: this.props.location,
+                  history: this.props.history,
+                  match: this.props.match,
+                  staticContext: this.props.staticContext,
+                };
+
+                if (window) {
+                  window.$route = $route;
+                }
+
+                const componentProps = { ...props, ...$route, $route };
+
+                return <props.component {...componentProps} key={`class-${index}`} />;
               }
             };
 
@@ -161,7 +175,10 @@ export default class Router {
               <Route
                 {...containerProps}
                 key={index}
-                render={() => <Wrapper {...classProps} />}
+                render={(props) => {
+                  const wrapperProps = { ...props, ...classProps };
+                  return <Wrapper {...wrapperProps} />;
+                }}
               />
             );
           })}
