@@ -18,4 +18,8 @@ export interface IParams {
 export interface IWrapperProps {
   useMiddleware: any;
   loadMiddleWare: any;
+  location?: any;
+  history?: any;
+  match?:any;
+  staticContext?: any;
 }

@@ -22,3 +22,7 @@ export interface IRouterProps {
   keyLength?: number | undefined;
   history?: any;
 }
+
+declare global {
+  export interface Window { $route: any; }
+}
