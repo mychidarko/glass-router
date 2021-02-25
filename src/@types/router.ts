@@ -28,3 +28,5 @@ declare global {
     $route: any;
   }
 }
+
+export type State = object | null;
