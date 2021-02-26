@@ -1,7 +1,11 @@
 import React from "react";
 import { Router as Base, Route, Switch } from "react-router-dom";
-import { createBrowserHistory, createHashHistory } from "history";
-
+import {
+  createBrowserHistory,
+  createHashHistory,
+  History,
+  UnregisterCallback,
+} from "history";
 import ScrollTo from "../utils/ScrollTo";
 import {
   To,
@@ -12,6 +16,7 @@ import {
   IWrapperProps,
   IRouterOptions,
   IRouterProps,
+  State,
 } from "../@types";
 
 /**
@@ -38,20 +43,17 @@ export default class Router {
     },
   };
 
-  protected _options: IRouterOptions = {
-    ...this._defaultOptions,
-  };
-
+  protected static _options: IRouterOptions;
   protected beforeHooks: Array<Function> = [];
 
-  protected _history: any = null;
+  protected static _history: History<State>;
 
   constructor(options: Partial<IRouterOptions> = {}) {
     this.options(options);
   }
 
-  options(options: Partial<IRouterOptions>) {
-    this._options = {
+  options(options: Partial<IRouterOptions>): void {
+    Router._options = {
       ...this._defaultOptions,
       ...options,
     };
@@ -66,7 +68,7 @@ export default class Router {
    */
   protected initializeMiddleWare() {
     this.beforeEach((to: IRoute, from: IRoute, next: Function) => {
-      const { middleware } = to?.meta || { middleware: null };
+      const { middleware } = to.meta || { middleware: null };
 
       if (!middleware) return next();
 
@@ -95,7 +97,7 @@ export default class Router {
       getUserConfirmation,
       keyLength,
       hashType,
-    } = this._options;
+    } = Router._options;
 
     let routerProps: IRouterProps = {};
 
@@ -107,7 +109,7 @@ export default class Router {
         keyLength,
       };
 
-      this._history = createBrowserHistory(routerProps);
+      Router._history = createBrowserHistory(routerProps);
     } else {
       routerProps = {
         basename: base,
@@ -115,7 +117,7 @@ export default class Router {
         getUserConfirmation,
       };
 
-      this._history = createHashHistory(routerProps);
+      Router._history = createHashHistory(routerProps);
     }
 
     const children = (
@@ -159,7 +161,7 @@ export default class Router {
             delete containerProps.render;
 
             const classProps = {
-              useMiddleware: this._options.middleware,
+              useMiddleware: Router._options.middleware,
               loadMiddleWare: this.loadMiddleWare,
             };
 
@@ -179,7 +181,7 @@ export default class Router {
     );
 
     return (
-      <Base history={this._history} {...routerProps}>
+      <Base history={Router._history} {...routerProps}>
         {children}
       </Base>
     );
@@ -229,7 +231,7 @@ export default class Router {
   }
 
   protected findNamedPath(path: string, params?: IParams): string {
-    let route = this._options.routes.find(route => {
+    let route = Router._options.routes.find(route => {
       return route.name === path;
     })?.path;
 
@@ -254,37 +256,29 @@ export default class Router {
    * Get the number of entries in the history stack
    */
   entries() {
-    return this._history.length;
+    return Router._history.length;
   }
 
   /**
    * Get the The current action (PUSH, REPLACE, or POP)
    */
   action() {
-    return this._history.action;
+    return Router._history.action;
   }
 
-  protected sortState(to: To | string, state: any = null) {
+  protected sortState(to: To | string, state?: State) {
     if (state === null && typeof to === "object") {
       const namedRouteState = (to as NamedRoute).state;
       const pathedRouteState = (to as PathedRoute).state;
-
-      if (namedRouteState) {
-        state = namedRouteState;
-      }
-
-      if (pathedRouteState) {
-        state = pathedRouteState;
-      }
+      state = namedRouteState ? namedRouteState : pathedRouteState;
     }
-
     return state;
   }
 
   /**
    * Internal middleware handler
    */
-  loadMiddleWare(to: To | string, state: any = null, self: this | null = null) {
+  loadMiddleWare(to: To | string, state?: State, self: this | null = null) {
     if (!self) self = this;
 
     const before = self.beforeHooks;
@@ -293,30 +287,30 @@ export default class Router {
 
     let fromRoute = window.location.pathname;
 
-    if (self._options.mode === "history") {
+    if (Router._options.mode === "history") {
       fromRoute = window.location.pathname;
     } else {
       fromRoute = window.location.hash.substring(1);
     }
 
-    var from = self._options.routes.find(function(route) {
+    var from = Router._options.routes.find(function(route) {
       return route.path === fromRoute;
     });
 
-    const toRoute = self._options.routes.find(function(route) {
+    const toRoute = Router._options.routes.find(function(route) {
       return route.path === to;
     });
 
     const next = (route: IRoute | null = null) => {
       if (route === null) return;
 
-      const trueRoute = self?.getRoutePath(route);
+      const trueRoute = self?.getRoutePath(route.path);
 
-      if (self?._options.mode === "hash") {
-        return self?._history.push(trueRoute);
+      if (Router._options.mode === "hash") {
+        return Router._history.push(trueRoute);
       }
 
-      return self?._history.push(trueRoute, state);
+      return Router._history.push(trueRoute, state);
     };
 
     return before.forEach(m => m(toRoute, from, next));
@@ -325,62 +319,62 @@ export default class Router {
   /**
    * Navigate to a specific path
    */
-  push(to: To | string, state: any = null) {
+  push(to: To | string, state?: State): void {
     const path = this.getRoutePath(to);
 
-    if (this._options.mode === "hash") {
-      return this._history.push(path);
+    if (Router._options.mode === "hash") {
+      return Router._history.push(path);
     }
 
     state = this.sortState(to, state);
 
-    return this._history.push(path, state);
+    return Router._history.push(path, state);
   }
 
   /**
    * Replaces the current entry on the history stack
    */
-  replace(options: any, state: any = null) {
+  replace(options: any, state?: State): void {
     const path = this.getRoutePath(options);
 
-    if (this._options.mode === "hash") {
-      return this._history.replace(path);
+    if (Router._options.mode === "hash") {
+      return Router._history.replace(path);
     }
 
     state = this.sortState(options, state);
 
-    return this._history.replace(path, state);
+    return Router._history.replace(path, state);
   }
 
   /**
    * Moves the pointer in the history stack by n entries
    */
-  go(n: number) {
-    return this._history.go(n);
+  go(n: number): void {
+    return Router._history.go(n);
   }
 
   /**
    * Go back
    */
-  back() {
-    return this._history.go(-1);
+  back(): void {
+    return Router._history.go(-1);
   }
 
   /**
    * Go forward
    */
-  forward() {
-    return this._history.go(1);
+  forward(): void {
+    return Router._history.go(1);
   }
 
   /**
    * Go back
    */
-  disable(prompt: any) {
-    return this._history.block(prompt);
+  disable(prompt: any): UnregisterCallback {
+    return Router._history.block(prompt);
   }
 
-  history() {
-    return this._history;
+  history(): History<State> {
+    return Router._history;
   }
 }

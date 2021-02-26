@@ -1,14 +1,9 @@
 import { RouteProps } from "react-router-dom";
 
-export interface IRouteBase extends RouteProps {
+export interface IRoute extends RouteProps {
   path: string;
   name?: string;
   meta?: any;
-  props?: object;
-}
-
-export interface IRoute extends IRouteBase {
-  children?: Array<IRoute>;
 }
 
 export interface IParams {
@@ -29,10 +24,10 @@ export type To = NamedRoute | PathedRoute;
 export type NamedRoute = {
   name: string;
   params?: IParams;
-  state?: object;
+  state: object | null;
 };
 
 export type PathedRoute = {
   path: string;
-  state?: object;
+  state: object | null;
 };

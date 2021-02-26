@@ -16,7 +16,7 @@ export interface IRouterOptions {
 
 export interface IRouterProps {
   basename?: string;
-  hashType?: "slash" | "noslash" | "hashbang" | undefined;
+  hashType?: "slash" | "noslash" | "hashbang" 
   getUserConfirmation?: (message?: string | undefined) => boolean;
   forceRefresh?: boolean;
   keyLength?: number | undefined;
