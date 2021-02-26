@@ -1,12 +1,8 @@
 import React, { FC } from "react";
-import GlassRouter from "./index";
-import { ILinkProps } from "./interfaces/link";
+import { GlassRouter } from "./index";
+import { ILinkProps } from "../@types/link";
 
-export const Link: FC<ILinkProps> = ({
-  to,
-  children,
-  ...rest
-}) => {
+export const Link: FC<ILinkProps> = ({ to, children, ...rest }) => {
   const href = GlassRouter.getRoutePath(to);
 
   const isModifiedEvent = (event: any) => {
@@ -35,12 +31,8 @@ export const Link: FC<ILinkProps> = ({
   const props = {
     ...rest,
     href,
-    onClick
+    onClick,
   };
 
-  return (
-    <a {...props}>
-      {children}
-    </a>
-  );
+  return <a {...props}>{children}</a>;
 };

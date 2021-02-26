@@ -1,15 +1,18 @@
 import React from "react";
-import {
-  Router as Base,
-  Route,
-  Switch,
-} from "react-router-dom";
+import { Router as Base, Route, Switch } from "react-router-dom";
 import { createBrowserHistory, createHashHistory } from "history";
 
-import ScrollTo from "./utils/ScrollTo";
-import { To, PathedRoute, NamedRoute } from "./types/route";
-import { IRoute, IParams, IWrapperProps } from "./interfaces/route";
-import { IRouterOptions, IRouterProps } from "./interfaces/router";
+import ScrollTo from "../utils/ScrollTo";
+import {
+  To,
+  PathedRoute,
+  NamedRoute,
+  IRoute,
+  IParams,
+  IWrapperProps,
+  IRouterOptions,
+  IRouterProps,
+} from "../@types";
 
 /**
  * Glass Router
@@ -36,20 +39,7 @@ export default class Router {
   };
 
   protected _options: IRouterOptions = {
-    routes: [],
-    mode: "history",
-    base: "/",
-    forceRefresh: false,
-    getUserConfirmation: window.confirm,
-    hashType: "slash",
-    keyLength: 6,
-    linkActiveClass: "router-link-active",
-    linkExactActiveClass: "router-link-exact-active",
-    middleware: false,
-    scrollBehavior: (savedPosition: { x: number; y: number }) => {
-      const { x, y } = savedPosition;
-      ScrollTo(x, y);
-    },
+    ...this._defaultOptions,
   };
 
   protected beforeHooks: Array<Function> = [];
@@ -70,7 +60,6 @@ export default class Router {
       this.initializeMiddleWare();
     }
   }
-
 
   /**
    * Initialize middleware handler
@@ -145,7 +134,8 @@ export default class Router {
 
               render() {
                 const $route = {
-                  state: (this.props.location && this.props.location.state) || null,
+                  state:
+                    (this.props.location && this.props.location.state) || null,
                   location: this.props.location,
                   history: this.props.history,
                   match: this.props.match,
@@ -158,24 +148,26 @@ export default class Router {
 
                 const componentProps = { ...props, ...$route, $route };
 
-                return <props.component {...componentProps} key={`class-${index}`} />;
+                return (
+                  <props.component {...componentProps} key={`class-${index}`} />
+                );
               }
-            };
+            }
 
-            let containerProps = {...props};
+            let containerProps = { ...props };
             delete containerProps.component;
             delete containerProps.render;
 
             const classProps = {
               useMiddleware: this._options.middleware,
               loadMiddleWare: this.loadMiddleWare,
-            }
+            };
 
             return (
               <Route
                 {...containerProps}
                 key={index}
-                render={(props) => {
+                render={props => {
                   const wrapperProps = { ...props, ...classProps };
                   return <Wrapper {...wrapperProps} />;
                 }}
@@ -237,7 +229,7 @@ export default class Router {
   }
 
   protected findNamedPath(path: string, params?: IParams): string {
-    let route = this._options.routes.find((route) => {
+    let route = this._options.routes.find(route => {
       return route.name === path;
     })?.path;
 
@@ -327,7 +319,7 @@ export default class Router {
       return self?._history.push(trueRoute, state);
     };
 
-    return before.forEach((m) => m(toRoute, from, next));
+    return before.forEach(m => m(toRoute, from, next));
   }
 
   /**

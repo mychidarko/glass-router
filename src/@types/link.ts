@@ -1,4 +1,4 @@
-import { To } from "types/route";
+import { To } from "./route";
 
 export interface ILinkProps
   extends React.DetailedHTMLProps<

@@ -24,5 +24,7 @@ export interface IRouterProps {
 }
 
 declare global {
-  export interface Window { $route: any; }
+  export interface Window {
+    $route: any;
+  }
 }
