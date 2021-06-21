@@ -1,38 +1,16 @@
-import { RouteProps } from "react-router-dom";
+import { BaseRouteOptions, To } from "./router";
 
-export interface IRouteBase extends RouteProps {
-  path: string;
-  name?: string;
-  meta?: any;
-  props?: object;
-}
-
-export interface IRoute extends IRouteBase {
-  children?: Array<IRoute>;
-}
-
-export interface IParams {
-  [key: string]: string | number;
-}
-
-export interface IWrapperProps {
-  useMiddleware: any;
-  loadMiddleWare: any;
-  location?: any;
-  history?: any;
-  match?: any;
-  staticContext?: any;
-}
-
-export type To = NamedRoute | PathedRoute;
-
-export type NamedRoute = {
-  name: string;
-  params?: IParams;
-  state?: object;
+export interface LinkProps
+	extends React.DetailedHTMLProps<
+		React.AnchorHTMLAttributes<HTMLAnchorElement>,
+		HTMLAnchorElement
+	> {
+	to: To | string;
+	noActive?: boolean;
 };
 
-export type PathedRoute = {
-  path: string;
-  state?: object;
+export interface MiddlwareContext {
+	to: BaseRouteOptions;
+	from: BaseRouteOptions;
+	next: Function;
 };
