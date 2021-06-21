@@ -1,9 +1,9 @@
 import React, { FC } from "react";
-import { GlassRX } from ".";
+import { GlassRouter } from ".";
 import { LinkProps } from "./@types/route";
 
 export const Link: FC<LinkProps> = ({ to, noActive = true, children, ...rest }) => {
-	const href = GlassRX.getRoutePath(to);
+	const href = GlassRouter.getRoutePath(to);
 
 	const isModifiedEvent = (event: any) => {
 		return !!(
@@ -29,7 +29,7 @@ export const Link: FC<LinkProps> = ({ to, noActive = true, children, ...rest }) 
 			!isModifiedEvent(event) // ignore clicks with modifier keys
 		) {
 			event.preventDefault();
-			return GlassRX.push(to);
+			return GlassRouter.push(to);
 		}
 	};
 
@@ -39,7 +39,7 @@ export const Link: FC<LinkProps> = ({ to, noActive = true, children, ...rest }) 
 		const path = window.$route.pathname;
 
 		if (path === href) {
-			className += ` ${GlassRX.activeLink()}`;
+			className += ` ${GlassRouter.activeLink()}`;
 		}
 	}
 

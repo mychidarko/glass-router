@@ -1,7 +1,7 @@
 import React from "react";
 import { createBrowserHistory, createHashHistory, History } from "history";
 import { Redirect, Route, Router as Base, Switch } from "react-router-dom";
-import { GlassRX } from ".";
+import { GlassRouter } from ".";
 import { MiddlwareContext } from "./@types/route";
 import { RouteParams, RouterOptions, RouterProps, To } from "./@types/router";
 
@@ -345,14 +345,14 @@ export default class Router {
 			if (typeof route === "string") {
 				trueRoute = route;
 			} else {
-				trueRoute = GlassRX.getRoutePath(route);
+				trueRoute = GlassRouter.getRoutePath(route);
 			}
 
-			if (GlassRX._options.mode === "hash") {
-				return GlassRX._history.push(trueRoute);
+			if (GlassRouter._options.mode === "hash") {
+				return GlassRouter._history.push(trueRoute);
 			}
 
-			return GlassRX._history.push(trueRoute, state);
+			return GlassRouter._history.push(trueRoute, state);
 		};
 
 		return before.forEach((m) =>
@@ -367,10 +367,10 @@ export default class Router {
 
 /**
  * Get the glass router history
- * @returns GlassRX history
+ * @returns GlassRouter history
  */
 export const useHistory = () => {
-	return GlassRX.history();
+	return GlassRouter.history();
 };
 
 /**
@@ -379,7 +379,7 @@ export const useHistory = () => {
  */
 export const useRoute = () => {
 	return (route: To | string, state?: any) => {
-		GlassRX.push(route, state);
+		GlassRouter.push(route, state);
 	};
 };
 
