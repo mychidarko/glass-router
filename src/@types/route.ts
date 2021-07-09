@@ -24,5 +24,5 @@ export interface RouteProperties {
     state: unknown;
     hash: string;
     key?: string | undefined;
-	match?: match<{}>;
+	match?: match<any>;
 };
