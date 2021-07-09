@@ -2,7 +2,7 @@ import React from "react";
 import { createBrowserHistory, createHashHistory, History } from "history";
 import { Redirect, Route, Router as Base, Switch } from "react-router-dom";
 import { GlassRouter } from ".";
-import { MiddlwareContext } from "./@types/route";
+import { MiddlwareContext, RouteProperties } from "./@types/route";
 import { RouteParams, RouterOptions, RouterProps, To } from "./@types/router";
 
 /**
@@ -185,7 +185,7 @@ export default class Router {
 		const children = routes.map(
 			({ component, redirect, render, meta, ...rest }, index) => {
 				const wrapper = { component, redirect };
-				const $route = {
+				const $route: RouteProperties = {
 					...this._history.location,
 					history: this._history,
 				};

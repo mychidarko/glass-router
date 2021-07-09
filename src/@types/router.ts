@@ -1,3 +1,5 @@
+import { RouteProperties } from "./route";
+
 export interface RouteParams {
 	[key: string]: string | number;
 };
@@ -54,6 +56,6 @@ export interface RouterOptions {
 
 declare global {
 	export interface Window {
-		$route: any;
+		$route: RouteProperties;
 	}
 }
