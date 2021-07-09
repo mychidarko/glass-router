@@ -185,14 +185,6 @@ export default class Router {
 		const children = routes.map(
 			({ component, redirect, render, meta, ...rest }, index) => {
 				const wrapper = { component, redirect };
-				const $route: RouteProperties = {
-					...this._history.location,
-					history: this._history,
-				};
-
-				if (window) {
-					window.$route = $route;
-				}
 
 				if (redirect) {
 					return (
@@ -213,6 +205,8 @@ export default class Router {
 							render={(props) => {
 								this.runMiddleWare({ path: rest.path, meta });
 
+								this.setRoute(props.match);
+
 								return render(props);
 							}}
 							key={`class-${index}`}
@@ -225,11 +219,13 @@ export default class Router {
 						path={rest.path}
 						key={`class-${index}`}
 						exact={rest.exact}
-						render={() => {
+						render={(props) => {
 							this.runMiddleWare({ path: rest.path, meta });
 
+							const $route = this.setRoute(props.match);
+
 							return (
-								<wrapper.component $route={$route} {...rest} />
+								<wrapper.component $route={$route} {...rest} {...props} />
 							);
 						}}
 					/>
@@ -242,6 +238,20 @@ export default class Router {
 				<Switch>{children}</Switch>
 			</Base>
 		);
+	}
+
+	protected setRoute(match: any) {
+		const $route: RouteProperties = {
+			...this._history.location,
+			history: this._history,
+			match
+		};
+
+		if (window) {
+			window.$route = $route;
+		}
+
+		return $route;
 	}
 
 	// ---------- middleware handlers ----------- //

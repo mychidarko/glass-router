@@ -1,4 +1,5 @@
 import { History } from "history";
+import { match } from "react-router-dom";
 import { BaseRouteOptions, To } from "./router";
 
 export interface LinkProps
@@ -23,4 +24,5 @@ export interface RouteProperties {
     state: unknown;
     hash: string;
     key?: string | undefined;
+	match?: match<{}>;
 };
