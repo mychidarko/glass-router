@@ -129,6 +129,14 @@ export default class Router {
 	 * Navigate to a specific path
 	 */
 	public push(to: To | string, state: any = null) {
+		this.applyPluginHook("onLeave");
+		const from = this.getFullRoute(
+			this._options.mode === "history"
+				? window.location.pathname
+				: window.location.hash.substring(1)
+		);
+		if (from.onLeave) from.onLeave();
+
 		const path = this.getRoutePath(to);
 
 		if (this._options.mode === "hash") {
@@ -218,33 +226,9 @@ export default class Router {
 			this._history = createHashHistory(routerProps);
 		}
 
-		const RouterTransition = () => {
-			React.useEffect(() => {
-				this.applyPluginHook("onEnter");
-
-				return () => {
-					this.applyPluginHook("onLeave");
-				};
-			}, []);
-
-			return <></>;
-		};
-
 		const children = routes.map(
 			({ component, redirect, render, meta, ...rest }, index) => {
 				const wrapper = { component, redirect };
-
-				const RouteTransition = () => {
-					React.useEffect(() => {
-						if (rest.onEnter) rest.onEnter();
-
-						return () => {
-							if (rest.onLeave) rest.onLeave();
-						};
-					}, []);
-
-					return <div>Hello</div>;
-				};
 
 				if (redirect) {
 					return (
@@ -267,10 +251,8 @@ export default class Router {
 								this.runMiddleWare({ path: rest.path, meta });
 								this.setRoute(props.match);
 
-								<>
-									<RouterTransition key={`router-transition-${index}`} />
-									<RouteTransition key={`route-transition-${index}`} />
-								</>
+								this.applyPluginHook("onEnter");
+								if (rest.onEnter) rest.onEnter();
 
 								return render(props);
 							}}
@@ -286,10 +268,8 @@ export default class Router {
 						render={(props) => {
 							this.runMiddleWare({ path: rest.path, meta });
 
-							<>
-								<RouterTransition key={`router-transition-${index}`} />
-								<RouteTransition key={`route-transition-${index}`} />
-							</>
+							this.applyPluginHook("onEnter");
+							if (rest.onEnter) rest.onEnter();
 
 							const $route = this.setRoute(props.match);
 
