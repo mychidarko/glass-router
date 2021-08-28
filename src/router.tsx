@@ -261,7 +261,7 @@ export default class Router {
 
 				if (render && !component) {
 					return (
-						<>
+						<React.Fragment key={`render-fragment-${index}`}>
 							<RouterTransition key={`router-transition-${index}`} />
 							<RouteTransition key={`route-transition-${index}`} />
 							<Route
@@ -275,12 +275,12 @@ export default class Router {
 									return render(props);
 								}}
 							/>
-						</>
+						</React.Fragment>
 					);
 				}
 
 				return (
-					<>
+					<React.Fragment key={`component-fragment-${index}`}>
 						<RouterTransition key={`router-transition-${index}`} />
 						<RouteTransition key={`route-transition-${index}`} />
 						<Route
@@ -297,7 +297,7 @@ export default class Router {
 								);
 							}}
 						/>
-					</>
+					</React.Fragment>
 				);
 			}
 		);
