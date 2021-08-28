@@ -262,8 +262,8 @@ export default class Router {
 				if (render && !component) {
 					return (
 						<>
-							<RouterTransition />
-							<RouteTransition />
+							<RouterTransition key={`router-transition-${index}`} />
+							<RouteTransition key={`route-transition-${index}`} />
 							<Route
 								key={`render-${index}`}
 								path={rest.path}
@@ -281,11 +281,11 @@ export default class Router {
 
 				return (
 					<>
-						<RouterTransition />
-						<RouteTransition />
+						<RouterTransition key={`router-transition-${index}`} />
+						<RouteTransition key={`route-transition-${index}`} />
 						<Route
 							path={rest.path}
-							key={`class-${index}`}
+							key={`component-${index}`}
 							exact={rest.exact}
 							render={(props) => {
 								this.runMiddleWare({ path: rest.path, meta });
