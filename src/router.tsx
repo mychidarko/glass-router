@@ -61,6 +61,8 @@ export default class Router {
 	}
 
 	protected applyPluginHook(hook: Hook, params: any = null) {
+		if (this._plugins.length === 0) return;
+
 		this._plugins.forEach((plugin) => {
 			plugin[hook] && plugin[hook](params);
 		});
