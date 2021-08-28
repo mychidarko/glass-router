@@ -50,7 +50,6 @@ export interface RouterOptions {
 	keyLength: number | undefined;
 	linkActiveClass: string;
 	linkExactActiveClass: string;
-	middleware: boolean;
 	scrollBehavior: (savedPosition: { x: number; y: number }) => void;
 };
 
