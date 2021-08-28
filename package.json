@@ -1,6 +1,6 @@
 {
   "name": "glass-router",
-  "version": "0.11.5",
+  "version": "0.11.6",
   "description": "Glass router is a wrapper around `react-router` which provides a clean and developer friendly approach to routing in React.",
   "main": "dist/index.js",
   "module": "dist/glass-router.esm.js",

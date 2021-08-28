@@ -243,7 +243,7 @@ export default class Router {
 						};
 					}, []);
 
-					return <></>;
+					return <div>Hello</div>;
 				};
 
 				if (redirect) {
