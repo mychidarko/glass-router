@@ -90,6 +90,16 @@ export default class Router {
 		return route;
 	}
 
+	protected handlePageOnLeave() {
+		this.applyPluginHook("onLeave");
+		const from = this.getFullRoute(
+			this._options.mode === "history"
+				? window.location.pathname
+				: window.location.hash.substring(1)
+		);
+		if (from.onLeave) from.onLeave();
+	}
+
 	public getRoutePath(route: To | string): string {
 		if (typeof route === "string") return route;
 
@@ -129,13 +139,7 @@ export default class Router {
 	 * Navigate to a specific path
 	 */
 	public push(to: To | string, state: any = null) {
-		this.applyPluginHook("onLeave");
-		const from = this.getFullRoute(
-			this._options.mode === "history"
-				? window.location.pathname
-				: window.location.hash.substring(1)
-		);
-		if (from.onLeave) from.onLeave();
+		this.handlePageOnLeave();
 
 		const path = this.getRoutePath(to);
 
@@ -152,6 +156,8 @@ export default class Router {
 	 * Replaces the current entry on the history stack
 	 */
 	public replace(options: any, state: any = null) {
+		this.handlePageOnLeave();
+
 		const path = this.getRoutePath(options);
 
 		if (this._options.mode === "hash") {
@@ -167,6 +173,8 @@ export default class Router {
 	 * Moves the pointer in the history stack by n entries
 	 */
 	public go(n: number) {
+		this.handlePageOnLeave();
+
 		return this._history.go(n);
 	}
 
@@ -174,6 +182,8 @@ export default class Router {
 	 * Go back
 	 */
 	public back() {
+		this.handlePageOnLeave();
+
 		return this._history.go(-1);
 	}
 
@@ -181,6 +191,8 @@ export default class Router {
 	 * Go forward
 	 */
 	public forward() {
+		this.handlePageOnLeave();
+
 		return this._history.go(1);
 	}
 
