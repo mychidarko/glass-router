@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { createBrowserHistory, createHashHistory, History } from "history";
 import { Redirect, Route, Router as Base, Switch } from "react-router-dom";
 import { GlassRouter } from ".";
@@ -216,45 +216,45 @@ export default class Router {
 			this._history = createHashHistory(routerProps);
 		}
 
-		const RouterTransition = () => {
-			useEffect(() => {
-				this.applyPluginHook("onEnter");
+		// const RouterTransition = () => {
+		// 	React.useEffect(() => {
+		// 		this.applyPluginHook("onEnter");
 
-				return () => {
-					this.applyPluginHook("onLeave");
-				};
-			});
+		// 		return () => {
+		// 			this.applyPluginHook("onLeave");
+		// 		};
+		// 	});
 
-			return <></>;
-		};
+		// 	return <></>;
+		// };
 
 		const children = routes.map(
 			({ component, redirect, render, meta, ...rest }, index) => {
 				const wrapper = { component, redirect };
 
-				const RouteTransition = () => {
-					useEffect(() => {
-						if (rest.onEnter) {
-							rest.onEnter();
-						}
+				// const RouteTransition = () => {
+				// 	React.useEffect(() => {
+				// 		if (rest.onEnter) {
+				// 			rest.onEnter();
+				// 		}
 
-						return () => {
-							if (rest.onLeave) {
-								return rest.onLeave();
-							}
-						};
-					});
+				// 		return () => {
+				// 			if (rest.onLeave) {
+				// 				return rest.onLeave();
+				// 			}
+				// 		};
+				// 	});
 
-					return <></>;
-				};
+				// 	return <></>;
+				// };
 
 				if (redirect) {
 					return (
 						<Redirect
+							key={`class-${index}`}
 							exact={true}
 							path={rest.path}
 							to={redirect}
-							key={`class-${index}`}
 						/>
 					);
 				}
@@ -262,8 +262,8 @@ export default class Router {
 				if (render && !component) {
 					return (
 						<React.Fragment key={`render-fragment-${index}`}>
-							<RouterTransition key={`router-transition-${index}`} />
-							<RouteTransition key={`route-transition-${index}`} />
+							{/* <RouterTransition key={`router-transition-${index}`} />
+							<RouteTransition key={`route-transition-${index}`} /> */}
 							<Route
 								key={`render-${index}`}
 								path={rest.path}
@@ -281,8 +281,8 @@ export default class Router {
 
 				return (
 					<React.Fragment key={`component-fragment-${index}`}>
-						<RouterTransition key={`router-transition-${index}`} />
-						<RouteTransition key={`route-transition-${index}`} />
+						{/* <RouterTransition key={`router-transition-${index}`} />
+						<RouteTransition key={`route-transition-${index}`} /> */}
 						<Route
 							path={rest.path}
 							key={`component-${index}`}
@@ -293,7 +293,11 @@ export default class Router {
 								const $route = this.setRoute(props.match);
 
 								return (
-									<wrapper.component $route={$route} {...rest} {...props} />
+									<wrapper.component
+										$route={$route}
+										{...rest}
+										{...props}
+									/>
 								);
 							}}
 						/>
