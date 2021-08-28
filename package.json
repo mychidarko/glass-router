@@ -31,8 +31,7 @@
   "homepage": "https://github.com/darko-mychi/glass-router#readme",
   "peerDependencies": {
     "react": "*",
-    "react-router-dom": "*",
-    "history": "*"
+    "react-router-dom": "*"
   },
   "devDependencies": {
     "@types/react": "^17.0.2",

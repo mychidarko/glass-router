@@ -141,7 +141,7 @@ So how do we access this `meta` field?
 An example use case is checking for a meta field in the global navigation guard:
 
 ```js
-GlassRouter.beforeEach((to, from, next) => {
+GlassRouter.beforeEach(({ to, from, next }) => {
   if (to.meta.requiresAuth) {
     // this route requires auth, check if logged in
     // if not, redirect to login page.
@@ -168,20 +168,7 @@ GlassRouter.beforeEach((to, from, next) => {
 
 Using this concept, glassRX includes a middleware feature out of the box which allows you to write middleware which should be run before routing to the intended page.
 
-To get started, you simply need to pass the `true` to the `middleware` option.
-
-```js
-// ...
-
-GlassRouter.options({
-  routes,
-  middleware: true,
-});
-```
-
-Setting the `middleware` option doesn't force you to include middleware on all routes, as all routes without middleware are navigated to immediately.
-
-After turning on the `middleware` feature, you simply need to include your desired middleware in your route meta like so:
+To get started, simply define the `meta` property on your route with a property middleware which holds an array of middleware to call on the specified route.
 
 ```js
 import auth from "./config/middleware/auth";
@@ -214,6 +201,58 @@ export default function auth({ next }) {
 ```
 
 Your middleware is passed an object containing the `from`, `to` and `next` variables. `from` holds data about the route you're coming from, `to` is about the page you're routing to and `next` handles your routing. Leaving `next` empty is essentially the same as `next(to)`.
+
+## Hooks
+
+Besides middleware, glassRX also allows you to hook into the runtime of your routes and invoke some functions. We call these hooks. The available hooks on your routes are:
+
+- **onEnter**: This is called when a page is being routed to
+- **onLeave**: This is called when a page is being unmounted
+
+```ts
+GlassRouter.options({
+  routes: [
+    {
+      path: "/",
+      component: Home,
+      onEnter: () => { console.log("Enter"); },
+      onLeave: () => { console.log("Leave"); },
+    },
+  ],
+});
+```
+
+## Plugins
+
+Plugins are a new feature in glass router which allows you to extend the functionality provided by default. With plugins, you can perform custom operations using hooks registered in glass router. Let's create a plugin which logs the path of every route we move to in the next few lines.
+
+```ts
+class RouteLogger {
+  onHook({ to }: MiddlwareContext) {
+    console.log(to.path);
+  }
+}
+```
+
+That's it😱 All that's left now is to load in this plugin
+
+```ts
+GlassRouter.options({ ..., plugins: [RouteLogger] });
+```
+
+GlassRouter plugins hook into specific lifecycles in glass router. The methods which get called in plugins are:
+
+- **onInit** - This runs on glass router init.
+
+<!-- - **onReady** - *not yet implemented*
+- **onError** - *not yet implemented* -->
+
+- **onHook** - *runs just before router hooks (beforeEach)*
+- **afterHook** - *runs just after router hooks (beforeEach)*
+- **onMiddleware** - *runs just before in-route middleware*
+- **afterMiddleware** - *runs just after in-route middleware*
+- **onEnter** - *runs just before a route is loaded unto the dom*
+- **onLeave** - *runs just before a route exits the dom*
 
 ## Note
 
@@ -249,5 +288,5 @@ Route with `render` instead of `component`.
 
 Glass RX was developed by the collective efforts of:
 
-- Michael Darko [@darko-mychi](https://github.ccom/darko-mychi)
-- Cosmos Appiah [@console45](https://github.ccom/console45)
+- Michael Darko [@mychidarko](https://github.com/mychidarko)
+- Cosmos Appiah [@console45](https://github.com/console45)
