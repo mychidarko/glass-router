@@ -263,6 +263,7 @@ export default class Router {
 					return (
 						<>
 							<RouterTransition />
+							<RouteTransition />
 							<Route
 								key={`render-${index}`}
 								path={rest.path}
@@ -270,8 +271,6 @@ export default class Router {
 								render={(props) => {
 									this.runMiddleWare({ path: rest.path, meta });
 									this.setRoute(props.match);
-
-									<RouteTransition />
 
 									return render(props);
 								}}
@@ -283,14 +282,13 @@ export default class Router {
 				return (
 					<>
 						<RouterTransition />
+						<RouteTransition />
 						<Route
 							path={rest.path}
 							key={`class-${index}`}
 							exact={rest.exact}
 							render={(props) => {
 								this.runMiddleWare({ path: rest.path, meta });
-
-								<RouteTransition />
 								
 								const $route = this.setRoute(props.match);
 
