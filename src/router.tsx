@@ -259,49 +259,49 @@ export default class Router {
 
 				if (render && !component) {
 					return (
-						<React.Fragment key={`render-fragment-${index}`}>
-							<RouterTransition key={`router-transition-${index}`} />
-							<Route
-								key={`render-${index}`}
-								path={rest.path}
-								exact={rest.exact}
-								render={(props) => {
-									this.runMiddleWare({ path: rest.path, meta });
-									this.setRoute(props.match);
+						<Route
+							key={`render-${index}`}
+							path={rest.path}
+							exact={rest.exact}
+							render={(props) => {
+								this.runMiddleWare({ path: rest.path, meta });
+								this.setRoute(props.match);
 
+								<>
+									<RouterTransition key={`router-transition-${index}`} />
 									<RouteTransition key={`route-transition-${index}`} />
+								</>
 
-									return render(props);
-								}}
-							/>
-						</React.Fragment>
+								return render(props);
+							}}
+						/>
 					);
 				}
 
 				return (
-					<React.Fragment key={`component-fragment-${index}`}>
-						<RouterTransition key={`router-transition-${index}`} />
-						<Route
-							path={rest.path}
-							key={`component-${index}`}
-							exact={rest.exact}
-							render={(props) => {
-								this.runMiddleWare({ path: rest.path, meta });
-								
-								<RouteTransition key={`route-transition-${index}`} />
-								
-								const $route = this.setRoute(props.match);
+					<Route
+						path={rest.path}
+						key={`component-${index}`}
+						exact={rest.exact}
+						render={(props) => {
+							this.runMiddleWare({ path: rest.path, meta });
 
-								return (
-									<wrapper.component
-										$route={$route}
-										{...rest}
-										{...props}
-									/>
-								);
-							}}
-						/>
-					</React.Fragment>
+							<>
+								<RouterTransition key={`router-transition-${index}`} />
+								<RouteTransition key={`route-transition-${index}`} />
+							</>
+
+							const $route = this.setRoute(props.match);
+
+							return (
+								<wrapper.component
+									$route={$route}
+									{...rest}
+									{...props}
+								/>
+							);
+						}}
+					/>
 				);
 			}
 		);
