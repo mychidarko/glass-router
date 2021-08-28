@@ -1,6 +1,6 @@
 {
   "name": "glass-router",
-  "version": "0.12.0",
+  "version": "0.12.1",
   "description": "Glass router is a wrapper around `react-router` which provides a clean and developer friendly approach to routing in React.",
   "main": "dist/index.js",
   "module": "dist/glass-router.esm.js",
@@ -16,7 +16,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/darko-mychi/glass-router.git"
+    "url": "https://github.com/mychidarko/glass-router.git"
   },
   "keywords": [
     "router",
@@ -26,9 +26,9 @@
   "author": "Michael Darko-Duodu <mychi.darko@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/darko-mychi/glass-router/issues"
+    "url": "https://github.com/mychidarko/glass-router/issues"
   },
-  "homepage": "https://github.com/darko-mychi/glass-router#readme",
+  "homepage": "https://github.com/mychidarko/glass-router#readme",
   "peerDependencies": {
     "react": "*",
     "react-router-dom": "*"
