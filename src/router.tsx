@@ -21,7 +21,6 @@ export default class Router {
 		keyLength: 6,
 		linkActiveClass: "router-link-active",
 		linkExactActiveClass: "router-link-exact-active",
-		middleware: false,
 		scrollBehavior: () => {},
 	};
 
@@ -79,6 +78,18 @@ export default class Router {
 		if (name) return this.findNamedPath(name);
 
 		return path || "";
+	}
+
+	public getFullRoute(route: To | string) {
+		const currentRoute = this._options.routes.find((item) => {
+			return item.path === this.getRoutePath(route);
+		});
+
+		if (!currentRoute) {
+			throw new Error(`Route ${typeof route === "string" ? route : route.path} does not exist`);
+		}
+
+		return currentRoute;
 	}
 
 	protected sortState(to: To | string, state: any = null) {
@@ -304,14 +315,13 @@ export default class Router {
 			return this._history.push(trueRoute, state);
 		};
 
-		const context = { to, from, next };
+		const context: MiddlwareContext = { to, from: this.getFullRoute(from), next };
 
 		if (this.beforeHooks.length > 0) {
 			this.beforeHooks.forEach((m) => m(context));
 		}
 
 		if (
-			this._options.middleware &&
 			to.meta &&
 			to.meta.middleware &&
 			to.meta.middleware.length > 0
