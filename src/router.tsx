@@ -225,7 +225,7 @@ export default class Router {
 				return () => {
 					this.applyPluginHook("onLeave");
 				};
-			});
+			}, []);
 
 			return <></>;
 		};
@@ -236,16 +236,12 @@ export default class Router {
 
 				const RouteTransition = () => {
 					React.useEffect(() => {
-						if (rest.onEnter) {
-							rest.onEnter();
-						}
+						if (rest.onEnter) rest.onEnter();
 
 						return () => {
-							if (rest.onLeave) {
-								return rest.onLeave();
-							}
+							if (rest.onLeave) rest.onLeave();
 						};
-					});
+					}, []);
 
 					return <></>;
 				};
@@ -265,7 +261,6 @@ export default class Router {
 					return (
 						<React.Fragment key={`render-fragment-${index}`}>
 							<RouterTransition key={`router-transition-${index}`} />
-							<RouteTransition key={`route-transition-${index}`} />
 							<Route
 								key={`render-${index}`}
 								path={rest.path}
@@ -273,6 +268,8 @@ export default class Router {
 								render={(props) => {
 									this.runMiddleWare({ path: rest.path, meta });
 									this.setRoute(props.match);
+
+									<RouteTransition key={`route-transition-${index}`} />
 
 									return render(props);
 								}}
@@ -284,14 +281,15 @@ export default class Router {
 				return (
 					<React.Fragment key={`component-fragment-${index}`}>
 						<RouterTransition key={`router-transition-${index}`} />
-						<RouteTransition key={`route-transition-${index}`} />
 						<Route
 							path={rest.path}
 							key={`component-${index}`}
 							exact={rest.exact}
 							render={(props) => {
 								this.runMiddleWare({ path: rest.path, meta });
-
+								
+								<RouteTransition key={`route-transition-${index}`} />
+								
 								const $route = this.setRoute(props.match);
 
 								return (
