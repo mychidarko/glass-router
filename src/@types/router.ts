@@ -18,6 +18,8 @@ export interface BaseRouteOptions {
 	exact?: boolean;
 	sensitive?: boolean;
 	strict?: boolean;
+	onEnter?: (params?: any) => void;
+	onLeave?: (params?: any) => void;
 };
 
 export interface RouterProps {
@@ -41,7 +43,7 @@ export interface Route extends BaseRouteOptions {
 };
 
 export interface RouterOptions {
-	routes: Array<Route>;
+	routes: Route[];
 	mode: "history" | "hash";
 	base: string;
 	forceRefresh: false;
@@ -51,7 +53,20 @@ export interface RouterOptions {
 	linkActiveClass: string;
 	linkExactActiveClass: string;
 	scrollBehavior: (savedPosition: { x: number; y: number }) => void;
+	plugins: Plugin[];
 };
+
+export type Plugin = any;
+export type Hook =
+  | "onInit"
+  | "onReady"
+  | "onError"
+  | "onHook"
+  | "afterHook"
+  | "onMiddleware"
+  | "afterMiddleware"
+  | "onEnter"
+  | "onLeave";
 
 declare global {
 	export interface Window {

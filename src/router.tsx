@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { createBrowserHistory, createHashHistory, History } from "history";
 import { Redirect, Route, Router as Base, Switch } from "react-router-dom";
 import { GlassRouter } from ".";
 import { MiddlwareContext, RouteProperties } from "./@types/route";
-import { RouteParams, RouterOptions, RouterProps, To } from "./@types/router";
+import { Hook, Plugin, RouteParams, RouterOptions, RouterProps, To } from "./@types/router";
 
 /**
  * Glass Router
@@ -11,6 +11,7 @@ import { RouteParams, RouterOptions, RouterProps, To } from "./@types/router";
  * An extensive and powerful router for react.
  */
 export default class Router {
+	protected _plugins: Plugin[] = [];
 	protected _defaultOptions: RouterOptions = {
 		routes: [],
 		mode: "history",
@@ -22,6 +23,7 @@ export default class Router {
 		linkActiveClass: "router-link-active",
 		linkExactActiveClass: "router-link-exact-active",
 		scrollBehavior: () => {},
+		plugins: [],
 	};
 
 	protected _options: RouterOptions = this._defaultOptions;
@@ -39,9 +41,30 @@ export default class Router {
 			...this._defaultOptions,
 			...options,
 		};
+
+		this.pluginInit(this._options.plugins);
+
+		this.applyPluginHook("onInit");
 	}
 
 	// ---------- glass router internals ----------- //
+
+	protected pluginInit(plugins: Plugin[]) {
+		plugins.forEach((plugin) => {
+			if (typeof plugin === "object") {
+				this._plugins.push(plugin);
+			} else {
+				const p = new plugin();
+				this._plugins.push(p);
+			}
+		});
+	}
+
+	protected applyPluginHook(hook: Hook, params: any = null) {
+		this._plugins.forEach((plugin) => {
+			plugin[hook] && plugin[hook](params);
+		});
+	}
 
 	protected findNamedPath(path: string, params?: RouteParams): string {
 		let route = this._options.routes.find((route) => {
@@ -193,9 +216,37 @@ export default class Router {
 			this._history = createHashHistory(routerProps);
 		}
 
+		const RouterTransition = () => {
+			useEffect(() => {
+				this.applyPluginHook("onEnter");
+
+				return () => {
+					this.applyPluginHook("onLeave");
+				};
+			});
+
+			return <></>;
+		};
+
 		const children = routes.map(
 			({ component, redirect, render, meta, ...rest }, index) => {
 				const wrapper = { component, redirect };
+
+				const RouteTransition = () => {
+					useEffect(() => {
+						if (rest.onEnter) {
+							rest.onEnter();
+						}
+
+						return () => {
+							if (rest.onLeave) {
+								return rest.onLeave();
+							}
+						};
+					});
+
+					return <></>;
+				};
 
 				if (redirect) {
 					return (
@@ -210,36 +261,45 @@ export default class Router {
 
 				if (render && !component) {
 					return (
-						<Route
-							path={rest.path}
-							exact={rest.exact}
-							render={(props) => {
-								this.runMiddleWare({ path: rest.path, meta });
+						<>
+							<RouterTransition />
+							<Route
+								key={`render-${index}`}
+								path={rest.path}
+								exact={rest.exact}
+								render={(props) => {
+									this.runMiddleWare({ path: rest.path, meta });
+									this.setRoute(props.match);
 
-								this.setRoute(props.match);
+									<RouteTransition />
 
-								return render(props);
-							}}
-							key={`class-${index}`}
-						/>
+									return render(props);
+								}}
+							/>
+						</>
 					);
 				}
 
 				return (
-					<Route
-						path={rest.path}
-						key={`class-${index}`}
-						exact={rest.exact}
-						render={(props) => {
-							this.runMiddleWare({ path: rest.path, meta });
+					<>
+						<RouterTransition />
+						<Route
+							path={rest.path}
+							key={`class-${index}`}
+							exact={rest.exact}
+							render={(props) => {
+								this.runMiddleWare({ path: rest.path, meta });
 
-							const $route = this.setRoute(props.match);
+								<RouteTransition />
+								
+								const $route = this.setRoute(props.match);
 
-							return (
-								<wrapper.component $route={$route} {...rest} {...props} />
-							);
-						}}
-					/>
+								return (
+									<wrapper.component $route={$route} {...rest} {...props} />
+								);
+							}}
+						/>
+					</>
 				);
 			}
 		);
@@ -283,17 +343,14 @@ export default class Router {
 		return this.registerHook(this.beforeHooks, fn);
 	}
 
-	protected runMiddleWare(to: any, state: any = null) {
-		if (this.getRoutePath(to) === "*") {
-			return;
-		}
-
-		const from =
+	protected getNextFunction(state: any = null) {
+		const from = this.getFullRoute(
 			this._options.mode === "history"
 				? window.location.pathname
-				: window.location.hash.substring(1);
+				: window.location.hash.substring(1)
+		);
 
-		const next = (route: To | null = null) => {
+		return (route: To | null = null) => {
 			if (route === null) return;
 
 			let trueRoute;
@@ -304,7 +361,7 @@ export default class Router {
 				trueRoute = this.getRoutePath(route);
 			}
 
-			if (trueRoute === from) {
+			if (trueRoute === from.path) {
 				return;
 			}
 
@@ -314,12 +371,31 @@ export default class Router {
 
 			return this._history.push(trueRoute, state);
 		};
+	}
 
-		const context: MiddlwareContext = { to, from: this.getFullRoute(from), next };
+	protected runMiddleWare(to: any, state: any = null) {
+		if (this.getRoutePath(to) === "*") {
+			return;
+		}
+
+		const from = this.getFullRoute(
+			this._options.mode === "history"
+				? window.location.pathname
+				: window.location.hash.substring(1)
+		);
+
+		const next = this.getNextFunction(state);
+
+		const context: MiddlwareContext = { to, from, next };
+
+		this.applyPluginHook("onHook", context);
 
 		if (this.beforeHooks.length > 0) {
 			this.beforeHooks.forEach((m) => m(context));
 		}
+
+		this.applyPluginHook("afterHook", context);
+		this.applyPluginHook("onMiddleware", context);
 
 		if (
 			to.meta &&
@@ -328,6 +404,8 @@ export default class Router {
 		) {
 			to.meta.middleware.forEach((m: any) => m(context));
 		}
+
+		this.applyPluginHook("afterMiddleware", context);
 	}
 
 	protected loadMiddleWare(
