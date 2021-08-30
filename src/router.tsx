@@ -97,6 +97,9 @@ export default class Router {
 				? window.location.pathname
 				: window.location.hash.substring(1)
 		);
+		if (!from) {
+			return;
+		}
 		if (from.onLeave) from.onLeave();
 	}
 
@@ -121,7 +124,7 @@ export default class Router {
 		});
 
 		if (!currentRoute) {
-			throw new Error(`Route ${typeof route === "string" ? route : route.path} does not exist`);
+			return null;
 		}
 
 		return currentRoute;
@@ -355,6 +358,10 @@ export default class Router {
 				trueRoute = this.getRoutePath(route);
 			}
 
+			if (!from) {
+				return;
+			}
+
 			if (trueRoute === from.path) {
 				return;
 			}
@@ -377,6 +384,10 @@ export default class Router {
 				? window.location.pathname
 				: window.location.hash.substring(1)
 		);
+
+		if (!from) {
+			return;
+		}
 
 		const next = this.getNextFunction(state);
 
