@@ -1,5 +1,7 @@
 # Glass Router (GlassRX)
 
+**REACT GLASS HAS BEEN DEPRECATED, PLS USE [HANA JS](https://github.com/leafsphp/hana) INSTEAD. THANKS.**
+
 Glass router is a wrapper around `react-router-dom` which provides a clean and developer friendly approach to routing in React. GlassRX provides an extensible structure which opens up your project to more scalable setups.
 
 *GlassRX is heavily inspired by `vue-router` and bases many features and conventions off of it.*
